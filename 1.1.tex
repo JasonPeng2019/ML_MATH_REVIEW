@@ -1,0 +1,83 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{enumitem}
+
+\newtheorem*{remark}{Remark}
+\newtheorem*{example}{Example}
+
+\begin{document}
+
+\section{Construction of a Probability Space}
+
+The theory of probability aims at defining a mathematical structure to describe random outcomes of experiments. For example, when tossing a single coin, we cannot determine the outcome, but by doing a large number of coin tosses, we can observe a regularity in the average outcome. Using this mathematical structure of probability, the goal is to perform automated reasoning, and in this sense, probability generalizes logical reasoning (Jaynes, 2003).
+
+% Figure 6.1 (mind map) omitted.
+
+\subsection{Philosophical Issues}
+
+When constructing automated reasoning systems, classical Boolean logic does not allow us to express certain forms of plausible reasoning. Consider the following scenario: We observe that $A$ is false. We find $B$ becomes less plausible, although no conclusion can be drawn from classical logic. We observe that $B$ is true. It seems $A$ becomes more plausible. We use this form of reasoning daily. We are waiting for a friend, and consider three possibilities: $H_1$, she is on time; $H_2$, she has been delayed by traffic; and $H_3$, she has been abducted by aliens. When we observe our friend is late, we must logically rule out $H_1$. We also tend to consider $H_2$ to be more likely, though we are not logically required to do so. Finally, we may consider $H_3$ to be possible, but we continue to consider it quite unlikely. How do we conclude $H_2$ is the most plausible answer? Seen in this way,
+\begin{quote}
+``For plausible reasoning it is necessary to extend the discrete true and false values of truth to continuous plausibilities'' (Jaynes, 2003).
+\end{quote}
+Probability theory can be considered a generalization of Boolean logic. In the context of machine learning, it is often applied in this way to formalize the design of automated reasoning systems. Further arguments about how probability theory is the foundation of reasoning systems can be found in Pearl (1988).
+
+The philosophical basis of probability and how it should be somehow related to what we think should be true (in the logical sense) was studied by Cox (Jaynes, 2003). Another way to think about it is that if we are precise about our common sense we end up constructing probabilities. E. T. Jaynes (1922--1998) identified three mathematical criteria, which must apply to all plausibilities:
+\begin{enumerate}[label=\arabic*.]
+  \item The degrees of plausibility are represented by real numbers.
+  \item These numbers must be based on the rules of common sense.
+  \item The resulting reasoning must be consistent, with the three following meanings of the word ``consistent'':
+  \begin{enumerate}[label=(\alph*)]
+    \item Consistency or non-contradiction: When the same result can be reached through different means, the same plausibility value must be found in all cases.
+    \item Honesty: All available data must be taken into account.
+    \item Reproducibility: If our state of knowledge about two problems are the same, then we must assign the same degree of plausibility to both of them.
+  \end{enumerate}
+\end{enumerate}
+The Cox--Jaynes theorem proves these plausibilities to be sufficient to define the universal mathematical rules that apply to plausibility $p$, up to transformation by an arbitrary monotonic function. Crucially, these rules are the rules of probability.
+
+\begin{remark}
+In machine learning and statistics, there are two major interpretations of probability: the Bayesian and frequentist interpretations (Bishop, 2006; Efron and Hastie, 2016). The Bayesian interpretation uses probability to specify the degree of uncertainty that the user has about an event. It is sometimes referred to as ``subjective probability'' or ``degree of belief''. The frequentist interpretation considers the relative frequencies of events of interest to the total number of events that occurred. The probability of an event is defined as the relative frequency of the event in the limit when one has infinite data.
+\end{remark}
+
+Some machine learning texts on probabilistic models use lazy notation and jargon, which is confusing. This text is no exception. Multiple distinct concepts are all referred to as ``probability distribution'', and the reader has to often disentangle the meaning from the context. One trick to help make sense of probability distributions is to check whether we are trying to model something categorical (a discrete random variable) or something continuous (a continuous random variable). The kinds of questions we tackle in machine learning are closely related to whether we are considering categorical or continuous models.
+
+\subsection{Probability and Random Variables}
+
+There are three distinct ideas that are often confused when discussing probabilities. First is the idea of a probability space, which allows us to quantify the idea of a probability. However, we mostly do not work directly with this basic probability space. Instead, we work with random variables (the second idea), which transfers the probability to a more convenient (often numerical) space. The third idea is the idea of a distribution or law associated with a random variable. We will introduce the first two ideas in this section and expand on the third idea in Section 6.2.
+
+Modern probability is based on a set of axioms proposed by Kolmogorov (Grinstead and Snell, 1997; Jaynes, 2003) that introduce the three concepts of sample space, event space, and probability measure. The probability space models a real-world process (referred to as an experiment) with random outcomes.
+
+\paragraph{The sample space $\Omega$}
+The sample space is the set of all possible outcomes of the experiment, usually denoted by $\Omega$. For example, two successive coin tosses have a sample space of $\{hh, tt, ht, th\}$, where ``h'' denotes ``heads'' and ``t'' denotes ``tails''.
+
+\paragraph{The event space $\mathcal{A}$}
+The event space is the space of potential results of the experiment. A subset $A$ of the sample space $\Omega$ is in the event space $\mathcal{A}$ if at the end of the experiment we can observe whether a particular outcome $\omega \in \Omega$ is in $A$. The event space $\mathcal{A}$ is obtained by considering the collection of subsets of $\Omega$, and for discrete probability distributions (Section 6.2.1) $\mathcal{A}$ is often the power set of $\Omega$.
+
+\paragraph{The probability $P$}
+With each event $A \in \mathcal{A}$, we associate a number $P(A)$ that measures the probability or degree of belief that the event will occur. $P(A)$ is called the probability of $A$. The probability of a single event must lie in the interval $[0,1]$, and the total probability over all outcomes in the sample space $\Omega$ must be $1$, i.e.,
+\[
+P(\Omega) = 1.
+\]
+Given a probability space $(\Omega, \mathcal{A}, P)$, we want to use it to model some real-world phenomenon. In machine learning, we often avoid explicitly referring to the probability space, but instead refer to probabilities on quantities of interest, which we denote by $\mathcal{T}$. In this book, we refer to $\mathcal{T}$ as the \emph{target space} and refer to elements of $\mathcal{T}$ as \emph{states}. We introduce a function $X : \Omega \to \mathcal{T}$ that takes an element of $\Omega$ (an outcome) and returns a particular quantity of interest $x$, a value in $\mathcal{T}$. This association/mapping from $\Omega$ to $\mathcal{T}$ is called a \emph{random variable}. For example, in the case of tossing two coins and counting the number of heads, a random variable $X$ maps to the three possible outcomes:
+\[
+X(hh)=2,\quad X(ht)=1,\quad X(th)=1,\quad X(tt)=0.
+\]
+In this particular case, $\mathcal{T}=\{0,1,2\}$, and it is the probabilities on elements of $\mathcal{T}$ that we are interested in. For a finite sample space $\Omega$ and finite $\mathcal{T}$, the function corresponding to a random variable is essentially a lookup table. For any subset $S \subseteq \mathcal{T}$, we associate $P_X(S)\in[0,1]$ (the probability) to a particular event occurring corresponding to the random variable $X$. Example 6.1 provides a concrete illustration of the terminology.
+
+\begin{remark}
+The aforementioned sample space $\Omega$ unfortunately is referred to by different names in different books. Another common name for $\Omega$ is ``state space'' (Jacod and Protter, 2004), but state space is sometimes reserved for referring to states in a dynamical system (Hasselblatt and Katok, 2003). Other names sometimes used to describe $\Omega$ are: ``sample description space'', ``possibility space,'' and ``event space''.
+\end{remark}
+
+\begin{example}[6.1]
+We assume that the reader is already familiar with computing probabilities of intersections and unions of sets of events. A gentler introduction to probability with many examples can be found in chapter 2 of Walpole et al.\ (2011).
+
+Consider a statistical experiment where we model a funfair game consisting of drawing two coins from a bag (with replacement). There are coins from USA (denoted as $\text{\$}$) and UK (denoted as $\pounds$) in the bag, and since we draw two coins from the bag, there are four outcomes in total. The state space or sample space $\Omega$ of this experiment is then
+\[
+(\text{\$},\text{\$}),\ (\text{\$},\pounds),\ (\pounds,\text{\$}),\ (\pounds,\pounds).
+\]
+Let us assume that the composition of the bag of coins is such that a draw returns at random a $\text{\$}$ with probability $0.3$.
+
+The event we are interested in is the total number of times the repeated draw returns $\text{\$}$. Let us define a random variable $X$ that maps the sample space $\Omega$ to $\mathcal{T}$, which denotes the number of times we draw $\text{\$}$ out of the bag. We can see from the preceding sample space we can get zero $\text{\$}$, one $\text{\$}$, or two $\text{\$}$s, and therefore $\mathcal{T}=\{0,1,2\}$. The random variable $X$ (a function or lookup table) can be represented as a table like the following:
+\begin{align}
+X
