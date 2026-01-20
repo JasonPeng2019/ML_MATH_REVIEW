@@ -1,0 +1,262 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsfonts,bm}
+\usepackage{physics}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\newcommand{\vx}{\mathbf{x}}
+\newcommand{\vw}{\mathbf{w}}
+\newcommand{\vphi}{\boldsymbol{\phi}}
+\newcommand{\vPhi}{\mathbf{\Phi}}
+\newcommand{\vt}{\mathbf{t}}
+\newcommand{\N}{\mathcal{N}}
+
+\title{PRML Chapter 1.2: Probability Theory and Bayesian Curve Fitting}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Probability as a Framework for Uncertainty}
+Uncertainty comes from noisy measurements and finite data. Probability theory
+provides a consistent calculus (sum/product rules) for quantifying and manipulating uncertainty; with decision theory it yields optimal predictions.
+
+\section{Basic Rules of Probability (Discrete Case)}
+Consider random variables $X \in \{x_i\}_{i=1}^M$ and $Y \in \{y_j\}_{j=1}^L$.
+Let $p(X{=}x_i,Y{=}y_j)$ be the joint, $p(X{=}x_i)$ and $p(Y{=}y_j)$ the marginals,
+and $p(Y{=}y_j\mid X{=}x_i)$ the conditional.
+
+\paragraph{Sum rule}
+\begin{equation}
+p(X{=}x_i) = \sum_{j=1}^L p(X{=}x_i,Y{=}y_j).
+\end{equation}
+
+\paragraph{Product rule}
+\begin{equation}
+p(X{=}x_i,Y{=}y_j) = p(Y{=}y_j\mid X{=}x_i)\,p(X{=}x_i).
+\end{equation}
+
+\paragraph{Bayes' theorem}
+\begin{equation}
+p(Y{=}y_j\mid X{=}x_i) = \frac{p(X{=}x_i\mid Y{=}y_j)\,p(Y{=}y_j)}{p(X{=}x_i)},
+\qquad
+p(X{=}x_i) = \sum_j p(X{=}x_i\mid Y{=}y_j)p(Y{=}y_j).
+\end{equation}
+
+\paragraph{Independence}
+$X$ and $Y$ are independent if $p(X,Y)=p(X)p(Y)$ (equivalently $p(Y\mid X)=p(Y)$).
+
+\paragraph{Fruit-box example}
+Two boxes: red ($r$) with 2 apples/6 oranges, blue ($b$) with 3 apples/1 orange;
+$P(r)=0.4$, $P(b)=0.6$. Conditionals:
+$P(a\mid r)=1/4$, $P(o\mid r)=3/4$, $P(a\mid b)=3/4$, $P(o\mid b)=1/4$.
+Marginal apple probability:
+\(
+P(a)=P(a\mid r)P(r)+P(a\mid b)P(b)=\tfrac{11}{20}.
+\)
+Posterior for box given orange (Bayes):
+\(
+P(r\mid o)=\tfrac{P(o\mid r)P(r)}{P(o)}=\tfrac{2}{3},\;
+P(b\mid o)=\tfrac{1}{3}.
+\)
+Posterior (after seeing fruit) can outweigh the prior (before seeing fruit).
+
+\section{Probability Densities (Continuous Case)}
+For real $x$, $p(x)\,\mathrm{d}x$ is the probability of $(x,x+\mathrm{d}x)$, so $p(x)\ge0$ and
+\(\int_{-\infty}^\infty p(x)\,\mathrm{d}x=1\).
+For intervals:
+\(\mathbb{P}(x\in(a,b))=\int_a^b p(x)\,\mathrm{d}x\).
+Cumulative distribution: \(P(z)=\int_{-\infty}^z p(x)\,\mathrm{d}x\), with $P'(z)=p(z)$.
+
+\paragraph{Change of variables}
+If $x=g(y)$, densities transform as
+\begin{equation}
+p_Y(y) = p_X(g(y))\,|g'(y)|,
+\end{equation}
+so density maxima depend on parameterization.
+
+\paragraph{Multiple variables}
+For $\vx=(x_1,\dots,x_D)$, joint density $p(\vx)\ge0$ and $\int p(\vx)\,\mathrm{d}\vx=1$.
+Sum/product rules become integrals, e.g.
+\(
+p(x) = \int p(x,y)\,\mathrm{d}y, \quad
+p(x,y) = p(y\mid x)p(x).
+\)
+
+\section{Expectations, Variance, Covariance}
+For discrete:
+\(
+\mathbb{E}[f] = \sum_x p(x) f(x).
+\)
+For continuous:
+\(
+\mathbb{E}[f] = \int p(x) f(x)\,\mathrm{d}x.
+\)
+Monte Carlo approximation from $N$ i.i.d.\ samples $x_n$:
+\(
+\mathbb{E}[f] \approx \frac1N \sum_{n=1}^N f(x_n)
+\) (exact as $N\to\infty$).
+
+\paragraph{Variance}
+\begin{equation}
+\mathrm{var}[f] = \mathbb{E}\big[(f-\mathbb{E}[f])^2\big]
+= \mathbb{E}[f^2] - \mathbb{E}[f]^2.
+\end{equation}
+For scalar $x$: $\mathrm{var}[x]=\mathbb{E}[x^2]-\mathbb{E}[x]^2$.
+
+\paragraph{Covariance}
+For scalars $x,y$:
+\(
+\mathrm{cov}[x,y]=\mathbb{E}[xy]-\mathbb{E}[x]\mathbb{E}[y].
+\)
+Independence implies zero covariance.
+For vectors $\vx,\vy$:
+\(
+\mathrm{cov}[\vx,\vy]=\mathbb{E}[(\vx-\mathbb{E}\vx)(\vy-\mathbb{E}\vy)^\top].
+\)
+Covariance matrix of $\vx$ is $\mathrm{cov}[\vx]=\mathrm{cov}[\vx,\vx]$.
+
+\section{Bayesian Probabilities (Degrees of Belief)}
+Beyond repeatable events, probabilities quantify belief about uncertain propositions.
+Coherence arguments (e.g.\ Cox/Jaynes) force degrees of belief to obey sum/product
+rules, so we use probability for both data and unknown parameters.
+
+\paragraph{Prior, likelihood, posterior, evidence}
+For parameters $\theta$ and data $D$:
+\(
+p(\theta\mid D) = \dfrac{p(D\mid \theta)\,p(\theta)}{p(D)}, \quad
+p(D) = \sum_\theta p(D\mid \theta)p(\theta)
+\) (integral for continuous $\theta$).
+Prior encodes assumptions before data; posterior updates after seeing data.
+
+\section{Gaussian Distribution}
+\paragraph{Univariate}
+\begin{equation}
+\N(x\mid\mu,\sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}}
+\exp\!\left(-\frac{(x-\mu)^2}{2\sigma^2}\right),
+\end{equation}
+mean $\mu$, variance $\sigma^2$, standard deviation $\sigma$, precision $\beta=1/\sigma^2$.
+Properties:
+\(
+\mathbb{E}[x]=\mu,\;
+\mathbb{E}[x^2]=\mu^2+\sigma^2,\;
+\mathrm{var}[x]=\sigma^2,
+\)
+mode = mean.
+
+\paragraph{Multivariate}
+\begin{equation}
+\N(\vx\mid \boldsymbol{\mu}, \mathbf{\Sigma}) =
+\frac{1}{(2\pi)^{D/2}|\mathbf{\Sigma}|^{1/2}}
+\exp\!\left(-\tfrac12(\vx-\boldsymbol{\mu})^\top
+\mathbf{\Sigma}^{-1}(\vx-\boldsymbol{\mu})\right).
+\end{equation}
+
+\subsection{Maximum Likelihood for Gaussian Parameters}
+Given i.i.d.\ scalar data $x=(x_1,\dots,x_N)^\top$:
+\begin{equation}
+p(x\mid\mu,\sigma^2)=\prod_{n=1}^N \N(x_n\mid\mu,\sigma^2).
+\end{equation}
+Log-likelihood:
+\[
+\ln p(x\mid\mu,\sigma^2) = -\frac{1}{2\sigma^2}\sum_{n}(x_n-\mu)^2
+-\frac{N}{2}\ln\sigma^2 - \frac{N}{2}\ln(2\pi).
+\]
+Maximization yields
+\begin{align}
+\mu_{\text{ML}} &= \frac{1}{N}\sum_{n=1}^N x_n, \\
+\sigma^2_{\text{ML}} &= \frac{1}{N}\sum_{n=1}^N (x_n-\mu_{\text{ML}})^2.
+\end{align}
+Bias of $\sigma^2_{\text{ML}}$: $\mathbb{E}[\sigma^2_{\text{ML}}]=\tfrac{N-1}{N}\sigma^2$.
+Unbiased variant:
+\(
+\hat{\sigma}^2 = \frac{1}{N-1}\sum_{n}(x_n-\mu_{\text{ML}})^2.
+\)
+Bias lessens as $N$ grows, but illustrates overfitting tendencies of pure ML.
+
+\section{Curve Fitting Revisited (Probabilistic View)}
+Model: $y(x,\vw)=\sum_{j=0}^M w_j x^j$ (as in Sec.\ 1.1).
+
+\paragraph{Likelihood with Gaussian noise}
+Assume conditional density
+\begin{equation}
+p(t\mid x,\vw,\beta) = \N\!\big(t \mid y(x,\vw), \beta^{-1}\big),
+\end{equation}
+independently for $n=1,\dots,N$:
+\(
+p(\vt \mid \vx,\vw,\beta)=\prod_n \N(t_n \mid y(x_n,\vw), \beta^{-1}).
+\)
+
+\paragraph{Log-likelihood}
+\begin{equation}
+\ln p(\vt\mid\vx,\vw,\beta)
+= -\frac{\beta}{2}\sum_{n=1}^N \big(y(x_n,\vw)-t_n\big)^2
++ \frac{N}{2}\ln\beta - \frac{N}{2}\ln(2\pi).
+\end{equation}
+
+\paragraph{ML for $\vw$}
+Maximizing w.r.t.\ $\vw$ is equivalent to minimizing the sum-of-squares error
+\(
+E(\vw)=\tfrac12\sum_n \big(y(x_n,\vw)-t_n\big)^2
+\)
+(same normal equations as Sec.\ 1.1).
+
+\paragraph{ML for noise precision}
+\begin{equation}
+\beta_{\text{ML}}^{-1} = \frac{1}{N}\sum_{n=1}^N \big(y(x_n,\vw_{\text{ML}})-t_n\big)^2.
+\end{equation}
+
+\paragraph{Predictive distribution (plug-in ML)}
+\begin{equation}
+p(t\mid x,\vx,\vt) \approx
+\N\!\big(t \mid y(x,\vw_{\text{ML}}), \beta_{\text{ML}}^{-1}\big).
+\end{equation}
+
+\section{MAP Estimation and Regularization}
+Place zero-mean isotropic Gaussian prior on weights:
+\begin{equation}
+p(\vw\mid \alpha) = \N(\vw\mid \mathbf{0}, \alpha^{-1}\mathbf{I}).
+\end{equation}
+Posterior (up to normalization):
+\(
+p(\vw\mid \vx,\vt,\alpha,\beta) \propto p(\vt\mid\vx,\vw,\beta)\,p(\vw\mid\alpha).
+\)
+MAP maximization $\Leftrightarrow$ minimize negative log-posterior:
+\begin{equation}
+\frac{\beta}{2}\sum_{n=1}^N \big(y(x_n,\vw)-t_n\big)^2
++ \frac{\alpha}{2}\|\vw\|_2^2.
+\end{equation}
+This is the regularized (ridge) sum-of-squares with effective $\lambda=\alpha/\beta$,
+linking weight decay to a Gaussian prior.
+
+\section{Bayesian Curve Fitting (Full Predictive Integration)}
+Bayesian prediction marginalizes over $\vw$:
+\begin{equation}
+p(t\mid x,\vx,\vt) = \int p(t\mid x,\vw,\beta)\,p(\vw\mid \vx,\vt,\alpha,\beta)\,\mathrm{d}\vw.
+\end{equation}
+For the polynomial-Gaussian setup, the posterior over $\vw$ is Gaussian; the integral
+is analytic, yielding
+\begin{equation}
+p(t\mid x,\vx,\vt) = \N\!\big(t \mid m(x),\, s^2(x)\big)
+\end{equation}
+with
+\begin{align}
+m(x) &= \beta\,\vphi(x)^\top \mathbf{S}
+\sum_{n=1}^N \vphi(x_n)\, t_n, \\
+s^2(x) &= \beta^{-1} + \vphi(x)^\top \mathbf{S}\,\vphi(x), \\
+\mathbf{S}^{-1} &= \alpha \mathbf{I} + \beta \sum_{n=1}^N \vphi(x_n)\vphi(x_n)^\top.
+\end{align}
+The variance decomposes into noise ($\beta^{-1}$) plus parameter uncertainty
+($\vphi^\top \mathbf{S}\vphi$), unlike the plug-in ML predictive.
+
+\section{Key Insights from Chapter 1.2}
+\begin{itemize}
+  \item Sum/product rules and Bayes' theorem are the core calculus for uncertainty.
+  \item Densities generalize probabilities; they transform with Jacobians under reparameterization.
+  \item Expectations, variance, covariance summarize distributions; sample averages approximate expectations.
+  \item Gaussian distribution: closed-form moments; ML estimates for $\mu,\sigma^2$ are simple but variance ML is biased.
+  \item Probabilistic curve fitting recovers least squares as Gaussian-noise ML; MAP adds a Gaussian prior $\Rightarrow$ ridge regularization.
+  \item Full Bayesian curve fitting integrates over $\vw$, producing a predictive mean and an $x$-dependent predictive variance that captures both noise and parameter uncertainty.
+\end{itemize}
+
+\end{document}

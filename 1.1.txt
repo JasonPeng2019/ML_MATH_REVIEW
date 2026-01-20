@@ -1,0 +1,144 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsfonts,bm}
+\usepackage{physics}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\newcommand{\vx}{\mathbf{x}}
+\newcommand{\vw}{\mathbf{w}}
+\newcommand{\vphi}{\boldsymbol{\phi}}
+\newcommand{\vPhi}{\mathbf{\Phi}}
+\newcommand{\vt}{\mathbf{t}}
+
+\title{PRML Chapter 1.1: Polynomial Curve Fitting}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Problem Setup}
+We study a simple regression task that serves as a running example for later concepts.
+\begin{itemize}
+  \item Inputs: real-valued \(x \in [0,1]\).
+  \item Targets: real-valued \(t\).
+  \item Synthetic data: \(t_n = \sin(2\pi x_n) + \varepsilon_n\) with Gaussian noise \(\varepsilon_n\).
+  \item Dataset: \( \{(x_n, t_n)\}_{n=1}^N \), typically \(N=10\) in the toy example.
+\end{itemize}
+Goal: predict \(t\) for a new \(x\), i.e., learn the underlying trend despite noise.
+
+\section{Model: Polynomial Regressor}
+Use an \(M\)-th order polynomial that is \emph{nonlinear in} \(x\) but \emph{linear in} parameters:
+\begin{equation}
+  y(x,\vw) = \sum_{j=0}^M w_j x^j.
+  \label{eq:model}
+\end{equation}
+Vector form with design matrix: define feature map \(\vphi(x) = (1, x, x^2, \dots, x^M)^\top\) and stack rows into \(\vPhi \in \mathbb{R}^{N \times (M+1)}\), \(\vPhi_{n j} = x_n^j\). Then
+\[
+  \mathbf{y} = \vPhi \vw, \qquad \vt = (t_1,\dots,t_N)^\top.
+\]
+
+\section{Data Fit: Sum-of-Squares Error}
+\begin{equation}
+  E(\vw) = \frac{1}{2}\sum_{n=1}^N \big(y(x_n,\vw) - t_n\big)^2
+         = \frac{1}{2}\|\vPhi\vw - \vt\|_2^2.
+  \label{eq:sse}
+\end{equation}
+This is nonnegative and vanishes only if all points are interpolated.
+
+\subsection{Closed-Form Minimizer (Normal Equations)}
+\(E(\vw)\) is quadratic in \(\vw\); set gradient to zero:
+\[
+  \nabla_{\vw} E = \vPhi^\top(\vPhi \vw - \vt) = \mathbf{0}
+  \;\;\Longrightarrow\;\;
+  \boxed{\vw^\star = \big(\vPhi^\top \vPhi\big)^{-1} \vPhi^\top \vt}.
+\]
+Solution is unique if \(\vPhi^\top\vPhi\) is invertible (true here for distinct \(x_n\) and modest \(M\)).
+
+\subsection{RMS Error (for comparing models/data sizes)}
+\begin{equation}
+  E_{\text{RMS}} = \sqrt{\frac{2 E(\vw^\star)}{N}},
+  \label{eq:rms}
+\end{equation}
+which is in the same units as \(t\) and normalizes for dataset size.
+
+\section{Model Complexity and Overfitting}
+\begin{itemize}
+  \item \textbf{Underfitting}: low \(M\) (e.g., \(M=0,1\)) cannot capture \(\sin(2\pi x)\); large bias, high \(E_{\text{RMS}}\) on both train and test.
+  \item \textbf{Good fit}: moderate \(M\) (e.g., \(M=3\)) tracks the smooth oscillation; low test error.
+  \item \textbf{Overfitting}: high \(M\) (e.g., \(M=9\) with \(N=10\)) interpolates all points (\(E(\vw^\star)=0\)) but oscillates wildly between them; training error \(\downarrow\), test error \(\uparrow\).
+  \item Coefficients blow up in magnitude for overfitted models; they finely tune to noise.
+\end{itemize}
+Overfitting arises because the model capacity exceeds what noisy, finite data can justify.
+
+\subsection{Train vs.\ Test Behavior}
+Using a separate test set (e.g., 100 fresh noisy samples):
+\begin{itemize}
+  \item Training \(E_{\text{RMS}}\) decreases monotonically with \(M\).
+  \item Test \(E_{\text{RMS}}\) is U-shaped: high for small \(M\) (underfit), low for moderate \(M\), then high for large \(M\) (overfit).
+\end{itemize}
+Optimal predictive performance is determined by the test (or validation) curve, not by training error.
+
+\subsection{Effect of Data Size}
+For a fixed model (e.g., \(M=9\)):
+\begin{itemize}
+  \item Small \(N\) \(\Rightarrow\) severe overfitting.
+  \item Larger \(N\) \(\Rightarrow\) overfitting diminishes; the same model can be supported by more data.
+\end{itemize}
+A common (rough) heuristic: number of data points should be at least several times the number of adaptive parameters, though parameter count is not always the right complexity measure.
+
+\section{Regularization (Weight Decay / Ridge Regression)}
+Add a quadratic penalty to discourage large coefficients:
+\begin{equation}
+  \tilde{E}(\vw)
+  = \frac{1}{2}\sum_{n=1}^N \big(y(x_n,\vw) - t_n\big)^2
+    + \frac{\lambda}{2}\|\vw\|_2^2,
+  \label{eq:ridge}
+\end{equation}
+often omitting \(w_0\) from the penalty to avoid dependence on the target's origin.
+
+\subsection{Closed-Form Solution}
+\[
+  \nabla_{\vw} \tilde{E} = \vPhi^\top(\vPhi\vw - \vt) + \lambda \vw = \mathbf{0}
+  \;\;\Longrightarrow\;\;
+  \boxed{\vw^\star_\lambda = \big(\vPhi^\top \vPhi + \lambda \mathbf{I}\big)^{-1} \vPhi^\top \vt}.
+\]
+\(\lambda\) trades fit for smoothness:
+\begin{itemize}
+  \item \(\lambda = 0\): ordinary least squares; highest variance, can overfit.
+  \item Small \(\lambda>0\): shrinks coefficients; suppresses oscillations; improved generalization.
+  \item Very large \(\lambda\): coefficients \(\to 0\); underfitting returns.
+\end{itemize}
+
+\subsection{Impact on Generalization}
+Plotting \(E_{\text{RMS}}\) vs.\ \(\ln \lambda\):
+\begin{itemize}
+  \item Training error increases with \(\lambda\).
+  \item Test error decreases from \(\lambda=0\), reaches a minimum, then rises for very large \(\lambda\).
+\end{itemize}
+Thus \(\lambda\) controls \emph{effective} model complexity.
+
+\section{Choosing Model Complexity}
+\begin{itemize}
+  \item Options: choose polynomial order \(M\) or regularization strength \(\lambda\).
+  \item Practical selection: hold-out/validation set to tune \(M\) or \(\lambda\).
+  \item When data are scarce, simple hold-out may be wasteful; motivates more data-efficient methods (e.g., cross-validation, fully Bayesian approaches).
+\end{itemize}
+
+\section{Probabilistic View (Pointer for Later Chapters)}
+\begin{itemize}
+  \item The least-squares fit corresponds to maximum likelihood under Gaussian noise: \(t_n = y(x_n,\vw) + \varepsilon_n\), \(\varepsilon_n \sim \mathcal{N}(0,\beta^{-1})\).
+  \item Regularization term \(\tfrac{\lambda}{2}\|\vw\|^2\) corresponds to a Gaussian prior on \(\vw\) (weight decay).
+  \item Overfitting is a general property of pure maximum likelihood on flexible models; Bayesian treatments adapt effective capacity to data size and can avoid overfitting even with many parameters.
+\end{itemize}
+
+\section{Key Takeaways from Chapter 1.1}
+\begin{itemize}
+  \item Polynomial curve fitting illustrates the core tension between fit and generalization.
+  \item Sum-of-squares error is easy to optimize in closed form; RMS error normalizes for comparison.
+  \item Overfitting manifests as low training error but high test error, with large-magnitude coefficients and oscillatory fits.
+  \item Increasing data mitigates overfitting for a fixed model.
+  \item Regularization (ridge) tames overfitting by shrinking weights; \(\lambda\) sets effective complexity.
+  \item Model complexity should be selected using held-out data (or later, Bayesian methods), not training error.
+\end{itemize}
+
+\end{document}
